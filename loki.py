@@ -249,10 +249,8 @@ class Loki(object):
                         # Skip paths that end with ..
                         for skip in self.LINUX_PATH_SKIPS_END:
                             if filePath.endswith(skip):
-                                if self.LINUX_PATH_SKIPS_END[skip] == 0:
-                                    logger.log("INFO", "FileScan", "Skipping %s element" % skip)
-                                    self.LINUX_PATH_SKIPS_END[skip] = 1
-                                    skipIt = True
+                                logger.log("INFO", "FileScan", "Skipping %s element" % skip)
+                                skipIt = True
 
                         # File mode
                         mode = os.stat(filePath).st_mode
