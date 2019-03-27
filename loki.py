@@ -1270,8 +1270,7 @@ class Loki(object):
             if logger.debug:
                 traceback.print_exc()
             logger.log("DEBUG", "FileScan", "Cannot open file %s (access denied)" % filePath)
-        finally:
-            return fileData
+        return fileData
 
     def script_stats_analysis(self, data):
         """
