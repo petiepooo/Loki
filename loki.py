@@ -40,7 +40,7 @@ import re
 import stat
 import platform
 import signal as signal_module
-from subprocess import Popen, PIPE
+from subprocess import Popen
 from collections import Counter
 
 #then external imports
@@ -48,15 +48,15 @@ import psutil
 import yara         # install 'yara-python' module not the outdated 'yara' module
 
 # LOKI Modules
-from lib.lokilogger import *
+from lib.lokilogger import codecs, LokiLogger, getSyslogTimestamp
 from lib.levenshtein import LevCheck
 
 # Private Rules Support
-from lib.privrules import *
+#from lib.privrules import *
 
 from lib.helpers import *
-from lib.pesieve import PESieve
-from lib.doublepulsar import DoublePulsar
+import lib.pesieve as pesieve
+import lib.doublepulsar as doublepulsar
 from lib.pluginframework import *
 
 try:
@@ -129,7 +129,7 @@ class Loki(object):
         self.app_path = get_application_path()
 
         # PESieve
-        self.peSieve = PESieve(self.app_path, is64bit(), logger)
+        self.peSieve = pesieve.PESieve(self.app_path, is64bit(), logger)
 
         # Check if signature database is present
         sig_dir = os.path.join(self.app_path, "./signature-base/")
@@ -883,7 +883,7 @@ class Loki(object):
 
         logger.log("INFO", "Rootkit", "Checking for Backdoors ...")
 
-        dp = DoublePulsar(ip="127.0.0.1", timeout=None, verbose=args.debug)
+        dp = doublepulsar.DoublePulsar(ip="127.0.0.1", timeout=None, verbose=args.debug)
 
         logger.log("INFO", "Rootkit", "Checking for Double Pulsar RDP Backdoor")
         try:
