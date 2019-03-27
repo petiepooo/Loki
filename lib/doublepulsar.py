@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 #
 # Double Pulsar Checks
 # https://github.com/countercept/doublepulsar-detection-script/blob/master/detect_doublepulsar_rdp.py
