@@ -192,11 +192,11 @@ class Loki(object):
 
             # Skip paths that start with ..
             newDirectories = []
-            for dir in directories:
+            for path in directories:
                 skipIt = False
 
                 # Generate a complete path for comparisons
-                completePath = os.path.join(root, dir).lower() + os.sep
+                completePath = os.path.join(root, path).lower() + os.sep
 
                 # Platform specific excludes
                 for skip in self.startExcludes:
@@ -205,7 +205,7 @@ class Loki(object):
                         skipIt = True
 
                 if not skipIt:
-                    newDirectories.append(dir)
+                    newDirectories.append(path)
             directories[:] = newDirectories
 
             # Loop through files
@@ -934,8 +934,8 @@ class Loki(object):
             for ioc_filename in os.listdir(ioc_directory):
                 try:
                     if 'c2' in ioc_filename:
-                        with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as file:
-                            lines = file.readlines()
+                        with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as iocfile:
+                            lines = iocfile.readlines()
 
                             for line in lines:
                                 try:
@@ -972,8 +972,8 @@ class Loki(object):
         try:
             for ioc_filename in os.listdir(ioc_directory):
                 if 'filename' in ioc_filename:
-                    with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as file:
-                        lines = file.readlines()
+                    with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as codecfile:
+                        lines = codecfile.readlines()
 
                         # Last Comment Line
                         last_comment = ""
@@ -1046,18 +1046,18 @@ class Loki(object):
                     continue
                 logger.log("INFO", "Init", "Processing YARA rules folder {0}".format(yara_rule_directory))
                 for root, _, files in os.walk(yara_rule_directory, onerror=walk_error, followlinks=False):
-                    for file in files:
+                    for filename in files:
                         try:
 
                             # Full Path
-                            yaraRuleFile = os.path.join(root, file)
+                            yaraRuleFile = os.path.join(root, filename)
 
                             # Skip hidden, backup or system related files
-                            if file.startswith(".") or file.startswith("~") or file.startswith("_"):
+                            if filename.startswith(".") or filename.startswith("~") or filename.startswith("_"):
                                 continue
 
                             # Extension
-                            extension = os.path.splitext(file)[1].lower()
+                            extension = os.path.splitext(filename)[1].lower()
 
                             # Test Compile
                             try:
@@ -1068,10 +1068,10 @@ class Loki(object):
                                     'filetype': dummy,
                                     'md5': dummy,
                                 })
-                                logger.log("DEBUG", "Init", "Initializing Yara rule %s" % file)
+                                logger.log("DEBUG", "Init", "Initializing Yara rule %s" % filename)
                                 rule_count += 1
                             except Exception:
-                                logger.log("ERROR", "Init", "Error while initializing Yara rule %s ERROR: %s" % (file, sys.exc_info()[1]))
+                                logger.log("ERROR", "Init", "Error while initializing Yara rule %s ERROR: %s" % (filename, sys.exc_info()[1]))
                                 traceback.print_exc()
                                 if logger.debug:
                                     sys.exit(1)
@@ -1143,28 +1143,28 @@ class Loki(object):
                 if 'hash' in ioc_filename:
                     if false_positive and 'falsepositive' not in ioc_filename:
                         continue
-                    with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as file:
-                        lines = file.readlines()
+                    with codecs.open(os.path.join(ioc_directory, ioc_filename), 'r', encoding='utf-8') as codecfile:
+                        lines = codecfile.readlines()
 
                         for line in lines:
                             try:
                                 if re.search(r'^#', line) or re.search(r'^[\s]*$', line):
                                     continue
                                 row = line.split(';')
-                                hash = row[0].lower()
+                                rowhash = row[0].lower()
                                 comment = row[1].rstrip(" ").rstrip("\n")
                                 # Empty File Hash
-                                if hash in HASH_WHITELIST:
+                                if rowhash in HASH_WHITELIST:
                                     continue
                                 # Else - check which type it is
-                                if len(hash) == 32:
-                                    self.hashes_md5[hash.lower()] = comment
-                                if len(hash) == 40:
-                                    self.hashes_sha1[hash.lower()] = comment
-                                if len(hash) == 64:
-                                    self.hashes_sha256[hash.lower()] = comment
+                                if len(rowhash) == 32:
+                                    self.hashes_md5[rowhash.lower()] = comment
+                                if len(rowhash) == 40:
+                                    self.hashes_sha1[rowhash.lower()] = comment
+                                if len(rowhash) == 64:
+                                    self.hashes_sha256[rowhash.lower()] = comment
                                 if false_positive:
-                                    self.false_hashes[hash.lower()] = comment
+                                    self.false_hashes[rowhash.lower()] = comment
                             except Exception:
                                 logger.log("ERROR", "Init", "Cannot read line: %s" % line)
 
@@ -1434,9 +1434,7 @@ def main():
     parser.add_argument('--debug', action='store_true', default=False, help='Debug output')
     parser.add_argument('--maxworkingset', type=int, default=100, help='Maximum working set size of processes to scan (in MB, default 100 MB)')
 
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 # MAIN ################################################################
 if __name__ == '__main__':
