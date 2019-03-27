@@ -523,7 +523,7 @@ class Loki(object):
             for string in strings:
                 # print string
                 extract = string[2]
-                if not extract in string_matches:
+                if extract not in string_matches:
                     string_matches.append(extract)
 
             string_num = 1
@@ -614,7 +614,7 @@ class Loki(object):
 
             # Special Checks ------------------------------------------------------
             # better executable path
-            if not "\\" in cmd and path != "none":
+            if "\\" not in cmd and path != "none":
                 cmd = path
 
             # Process Info
@@ -718,11 +718,11 @@ class Loki(object):
             # Source: Sysforensics http://goo.gl/P99QZQ
 
             # Process: System
-            if name == "System" and not pid == 4:
+            if name == "System" and pid != 4:
                 logger.log("WARNING", "ProcessScan", "System process without PID=4 %s" % process_info)
 
             # Process: smss.exe
-            if name == "smss.exe" and not parent_pid == 4:
+            if name == "smss.exe" and parent_pid != 4:
                 logger.log("WARNING", "ProcessScan", "smss.exe parent PID is != 4 %s" % process_info)
             if path != "none":
                 if name == "smss.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
@@ -754,7 +754,7 @@ class Loki(object):
             if name == "services.exe" and priority is not 9:
                 logger.log("WARNING", "ProcessScan", "services.exe priority is not 9 %s" % process_info)
             if wininit_pid > 0:
-                if name == "services.exe" and not parent_pid == wininit_pid:
+                if name == "services.exe" and parent_pid != wininit_pid:
                     logger.log("WARNING", "ProcessScan", "services.exe parent PID is not the one of wininit.exe %s" % process_info)
 
             # Process: lsass.exe
@@ -764,7 +764,7 @@ class Loki(object):
             if name == "lsass.exe" and priority is not 9:
                 logger.log("WARNING", "ProcessScan", "lsass.exe priority is not 9 %s" % process_info)
             if wininit_pid > 0:
-                if name == "lsass.exe" and not parent_pid == wininit_pid:
+                if name == "lsass.exe" and parent_pid != wininit_pid:
                     logger.log("WARNING", "ProcessScan", "lsass.exe parent PID is not the one of wininit.exe %s" % process_info)
             # Only a single lsass process is valid - count occurrences
             if name == "lsass.exe":
@@ -781,7 +781,7 @@ class Loki(object):
             if name == "svchost.exe" and not (self.check_svchost_owner(owner) or "unistacksvcgroup" in cmd.lower()):
                 logger.log("WARNING", "ProcessScan", "svchost.exe process owner is suspicious %s" % process_info)
 
-            if name == "svchost.exe" and not " -k " in cmd and cmd != "N/A":
+            if name == "svchost.exe" and " -k " not in cmd and cmd != "N/A":
                 logger.log("WARNING", "ProcessScan", "svchost.exe process does not contain a -k in its command line %s" % process_info)
 
             # Process: lsm.exe
@@ -793,7 +793,7 @@ class Loki(object):
             if name == "lsm.exe" and not (owner.startswith("NT ") or owner.startswith("LO") or owner.startswith("SYSTEM")  or owner.startswith(u"система")):
                 logger.log(u"WARNING", "ProcessScan", "lsm.exe process owner is suspicious %s" % process_info)
             if wininit_pid > 0:
-                if name == "lsm.exe" and not parent_pid == wininit_pid:
+                if name == "lsm.exe" and parent_pid != wininit_pid:
                     logger.log("WARNING", "ProcessScan", "lsm.exe parent PID is not the one of wininit.exe %s" % process_info)
 
             # Process: winlogon.exe
@@ -808,7 +808,7 @@ class Loki(object):
 
             # Process: explorer.exe
             if path != "none":
-                if name == "explorer.exe" and not t_systemroot.lower() in path.lower():
+                if name == "explorer.exe" and t_systemroot.lower() not in path.lower():
                     logger.log("WARNING", "ProcessScan", "explorer.exe path is not %%SYSTEMROOT%% %s" % process_info)
             if name == "explorer.exe" and parent_pid > 0:
                 for proc in processes:
