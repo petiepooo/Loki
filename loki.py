@@ -37,7 +37,7 @@ import re
 import stat
 import platform
 import signal as signal_module
-from subprocess import Popen, PIPE
+from subprocess import Popen
 from collections import Counter
 
 #then external imports
@@ -45,16 +45,16 @@ import psutil
 import yara         # install 'yara-python' module not the outdated 'yara' module
 
 # LOKI Modules
-from lib.lokilogger import *
+from lib.lokilogger import codecs, LokiLogger, getSyslogTimestamp
 from lib.levenshtein import LevCheck
 
 # Private Rules Support
-from lib.privrules import *
+#from lib.privrules import *
 
-from lib.helpers import *
-from lib.pesieve import PESieve
-from lib.doublepulsar import DoublePulsar
-from lib.pluginframework import *
+import lib.helpers as helpers
+import lib.pesieve as pesieve
+import lib.doublepulsar as doublepulsar
+import lib.pluginframework as plugin_fw
 
 try:
     import wmi
@@ -126,7 +126,7 @@ class Loki(object):
         self.app_path = get_application_path()
 
         # PESieve
-        self.peSieve = PESieve(self.app_path, is64bit(), logger)
+        self.peSieve = pesieve.PESieve(self.app_path, is64bit(), logger)
 
         # Check if signature database is present
         sig_dir = os.path.join(self.app_path, "./signature-base/")
@@ -140,7 +140,7 @@ class Loki(object):
 
         # Linux excludes from mtab
         if os_platform == "linux":
-            self.startExcludes = self.LINUX_PATH_SKIPS_START | set(getExcludedMountpoints())
+            self.startExcludes = self.LINUX_PATH_SKIPS_START | set(helpers.getExcludedMountpoints())
         # OSX excludes like Linux until we get some field data
         if os_platform == "osx":
             self.startExcludes = self.LINUX_PATH_SKIPS_START
@@ -795,7 +795,7 @@ class Loki(object):
             # Process: winlogon.exe
             if name == "winlogon.exe" and priority is not 13:
                 logger.log("WARNING", "ProcessScan", "winlogon.exe priority is not 13 %s" % process_info)
-            if re.search("(Windows 7|Windows Vista)", getPlatformFull()):
+            if re.search("(Windows 7|Windows Vista)", helpers.getPlatformFull()):
                 if name == "winlogon.exe" and parent_pid > 0:
                     for proc in processes:
                         if parent_pid == proc.ProcessId:
@@ -883,13 +883,13 @@ class Loki(object):
 
         logger.log("INFO", "Rootkit", "Checking for Backdoors ...")
 
-        dp = DoublePulsar(ip="127.0.0.1", timeout=None, verbose=args.debug)
+        dp = doublepulsar.DoublePulsar(ip="127.0.0.1", timeout=None, verbose=args.debug)
 
         logger.log("INFO", "Rootkit", "Checking for Double Pulsar RDP Backdoor")
         try:
             dp_rdp_result, message = dp.check_ip_rdp()
             if dp_rdp_result:
-                logger.log("ALERT", message)
+                logger.log("ALERT", "Rootkit", message)
             else:
                 logger.log("INFO", "Rootkit", "Double Pulsar RDP check RESULT: %s" % message)
         except Exception as e:
@@ -901,7 +901,7 @@ class Loki(object):
         try:
             dp_smb_result, message = dp.check_ip_smb()
             if dp_smb_result:
-                logger.log("ALERT", message)
+                logger.log("ALERT", "Rootkit", message)
             else:
                 logger.log("INFO", "Rootkit", "Double Pulsar SMB check RESULT: %s" % message)
         except Exception as e:
@@ -912,11 +912,11 @@ class Loki(object):
 
     def check_c2(self, remote_system):
         # IP - exact match
-        if is_ip(remote_system):
+        if helpers.is_ip(remote_system):
             for c2 in self.c2_server:
                 # if C2 definition is CIDR network
-                if is_cidr(c2):
-                    if ip_in_net(remote_system, c2):
+                if helpers.is_cidr(c2):
+                    if helpers.ip_in_net(remote_system, c2):
                         return True, self.c2_server[c2]
                 # if C2 is ip or else
                 if c2 == remote_system:
@@ -1238,7 +1238,7 @@ class Loki(object):
         # Adapted to work with the fileData already read to avoid
         # further disk I/O
 
-        fp = StringIO(fileData)
+        fp = helpers.StringIO(fileData)
         SectorSize = fp.read(2)[::-1]
         MaxSectorCount = fp.read(2)[::-1]
         MaxFileCount = fp.read(2)[::-1]
@@ -1253,7 +1253,7 @@ class Loki(object):
         fp.seek(0)
 
         data = fp.read(0x7)
-        crc = binascii.crc32(data, 0x45)
+        crc = helpers.binascii.crc32(data, 0x45)
         crc2 = '%08x' % (crc & 0xffffffff)
 
         logger.log("DEBUG", "Rootkit", "Regin FS Check CRC2: %s" % crc2.encode('hex'))
@@ -1384,7 +1384,7 @@ def updateLoki(sigsOnly):
 def walk_error(err):
     try:
         if "Error 3" in str(err):
-            logger.log('ERROR', "FileScan", removeNonAsciiDrop(str(err)))
+            logger.log('ERROR', "FileScan", helpers.removeNonAsciiDrop(str(err)))
         elif args.debug:
             print("Directory walk error")
             sys.exit(1)
@@ -1411,7 +1411,7 @@ def main():
     parser = argparse.ArgumentParser(description='Loki - Simple IOC Scanner')
     parser.add_argument('-p', help='Path to scan', metavar='path', default='C:\\')
     parser.add_argument('-s', help='Maximum file size to check in KB (default 5000 KB)', metavar='kilobyte', default=5000)
-    parser.add_argument('-l', help='Log file', metavar='log-file', default='loki-%s.log' % getHostname(os_platform))
+    parser.add_argument('-l', help='Log file', metavar='log-file', default='loki-%s.log' % helpers.getHostname(os_platform))
     parser.add_argument('-r', help='Remote syslog system', metavar='remote-loghost', default='')
     parser.add_argument('-t', help='Remote syslog port', metavar='remote-syslog-port', default=514)
     parser.add_argument('-a', help='Alert score', metavar='alert-level', default=100)
@@ -1454,13 +1454,13 @@ if __name__ == '__main__':
 
     # Logger
     LokiCustomFormatter = None
-    pathLokiInit, statusLokiInit = CheckLokiInit(get_application_path())
+    pathLokiInit, statusLokiInit = plugin_fw.CheckLokiInit(get_application_path())
     if statusLokiInit == 'present':
         try:
             execfile(pathLokiInit, globals(), locals())
         except:
             statusLokiInit = str(sys.exc_info()[1])
-    logger = LokiLogger(args.nolog, args.l, getHostname(os_platform), args.r, int(args.t), args.csv, args.onlyrelevant, args.debug,
+    logger = LokiLogger(args.nolog, args.l, helpers.getHostname(os_platform), args.r, int(args.t), args.csv, args.onlyrelevant, args.debug,
                         platform=os_platform, caller='main', customformatter=LokiCustomFormatter)
 
     # Update
@@ -1469,17 +1469,17 @@ if __name__ == '__main__':
         sys.exit(0)
 
     logger.log("NOTICE", "Init", "Starting Loki Scan VERSION: {3} SYSTEM: {0} TIME: {1} PLATFORM: {2}".format(
-        getHostname(os_platform), getSyslogTimestamp(), getPlatformFull(), logger.version))
+        helpers.getHostname(os_platform), getSyslogTimestamp(), helpers.getPlatformFull(), logger.version))
 
     if statusLokiInit == 'notpresent':
         pass
     elif statusLokiInit == 'present':
-        logger.log('INFO', 'Init', '%s loaded' % FILENAME_LOKI_INIT)
+        logger.log('INFO', 'Init', '%s loaded' % plugin_fw.FILENAME_LOKI_INIT)
     else:
-        logger.log('ERROR', 'Init', '%s load error %s' % (FILENAME_LOKI_INIT, statusLokiInit))
+        logger.log('ERROR', 'Init', '%s load error %s' % (plugin_fw.FILENAME_LOKI_INIT, statusLokiInit))
 
-    # Load plugins
-    LoadPlugins(globals(), locals())
+    # Load plugin_fw
+    plugin_fw.LoadPlugins(globals(), locals())
 
     # Loki
     loki = Loki(args.intense)
@@ -1501,10 +1501,10 @@ if __name__ == '__main__':
 
     # Set process to nice priority ------------------------------------
     if os_platform == "windows":
-        setNice(logger)
+        helpers.setNice(logger)
 
-    # run plugins
-    RunPluginsForPhase(LOKI_PHASE_BEFORE_SCANS)
+    # run plugin_fw
+    plugin_fw.RunPluginsForPhase(plugin_fw.LOKI_PHASE_BEFORE_SCANS)
 
     # Scan Processes --------------------------------------------------
     resultProc = False
@@ -1528,8 +1528,8 @@ if __name__ == '__main__':
     if not args.nofilescan:
         loki.scan_path(defaultPath)
 
-    # run plugins
-    RunPluginsForPhase(LOKI_PHASE_AFTER_SCANS)
+    # run plugin_fw
+    plugin_fw.RunPluginsForPhase(plugin_fw.LOKI_PHASE_AFTER_SCANS)
 
     # Result ----------------------------------------------------------
     logger.log("NOTICE", "Results", "Results: {0} alerts, {1} warnings, {2} notices".format(logger.alerts, logger.warnings, logger.notices))
@@ -1544,10 +1544,10 @@ if __name__ == '__main__':
         logger.log("RESULT", "Results", "SYSTEM SEEMS TO BE CLEAN.")
 
     logger.log("INFO", "Results", "Please report false positives via https://github.com/Neo23x0/signature-base")
-    logger.log("NOTICE", "Results", "Finished LOKI Scan SYSTEM: %s TIME: %s" % (getHostname(os_platform), getSyslogTimestamp()))
+    logger.log("NOTICE", "Results", "Finished LOKI Scan SYSTEM: %s TIME: %s" % (helpers.getHostname(os_platform), getSyslogTimestamp()))
 
-    # run plugins
-    RunPluginsForPhase(LOKI_PHASE_END)
+    # run plugin_fw
+    plugin_fw.RunPluginsForPhase(plugin_fw.LOKI_PHASE_END)
 
     if not args.dontwait:
         print(" ")
