@@ -1239,10 +1239,10 @@ class Loki(object):
         # further disk I/O
 
         fp = helpers.StringIO(fileData)
-        SectorSize = fp.read(2)[::-1]
-        MaxSectorCount = fp.read(2)[::-1]
-        MaxFileCount = fp.read(2)[::-1]
-        FileTagLength = fp.read(1)[::-1]
+        _ = fp.read(2)[::-1] #SectorSize
+        _ = fp.read(2)[::-1] #MaxSectorCount
+        _ = fp.read(2)[::-1] #MaxFileCount
+        _ = fp.read(1)[::-1] #FileTagLength
         CRC32custom = fp.read(4)[::-1]
 
         # original code:
