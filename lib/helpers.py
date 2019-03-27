@@ -8,7 +8,10 @@
 import sys
 import hashlib
 import binascii
-import pylzma
+try:
+    import lzma
+except ImportError:
+    import pylzma as lzma
 import zlib
 import struct
 import socket
@@ -137,7 +140,7 @@ def decompressSWFData(in_data):
             decompressData = zlib.decompress(in_data[8:])
         elif in_data[0] == 'Z':
             # lzma SWF
-            decompressData = pylzma.decompress(in_data[12:])
+            decompressData = lzma.decompress(in_data[12:])
         elif in_data[0] == 'F':
             # uncompressed SWF
             decompressData = in_data[8:]
