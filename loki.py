@@ -54,7 +54,7 @@ from lib.levenshtein import LevCheck
 # Private Rules Support
 #from lib.privrules import *
 
-from lib.helpers import *
+import lib.helpers as helpers
 import lib.pesieve as pesieve
 import lib.doublepulsar as doublepulsar
 from lib.pluginframework import *
@@ -143,7 +143,7 @@ class Loki(object):
 
         # Linux excludes from mtab
         if os_platform == "linux":
-            self.startExcludes = self.LINUX_PATH_SKIPS_START | set(getExcludedMountpoints())
+            self.startExcludes = self.LINUX_PATH_SKIPS_START | set(helpers.getExcludedMountpoints())
         # OSX excludes like Linux until we get some field data
         if os_platform == "osx":
             self.startExcludes = self.LINUX_PATH_SKIPS_START
@@ -265,7 +265,7 @@ class Loki(object):
                     c += 1
 
                     if not args.noindicator:
-                        printProgress(c)
+                        helpers.printProgress(c)
 
                     # Skip program directory
                     if self.app_path.lower() in filePath.lower():
@@ -305,7 +305,7 @@ class Loki(object):
                         logger.log("DEBUG", "FileScan", "Cannot open file %s (access denied)" % filePathCleaned)
 
                     # Evaluate Type
-                    fileType = get_file_type(filePath, self.filetype_magics, self.max_filetype_magics, logger)
+                    fileType = helpers.get_file_type(filePath, self.filetype_magics, self.max_filetype_magics, logger)
 
                     # Fast Scan Mode - non intense
                     do_intense_check = True
@@ -342,7 +342,7 @@ class Loki(object):
                         fileData = self.get_file_data(filePath)
 
                         # First bytes
-                        firstBytesString = "%s / %s" % (fileData[:20].encode('hex'), removeNonAsciiDrop(fileData[:20]))
+                        firstBytesString = "%s / %s" % (fileData[:20].encode('hex'), helpers.removeNonAsciiDrop(fileData[:20]))
 
                         # Hash Eval
                         matchType = None
@@ -352,7 +352,7 @@ class Loki(object):
                         sha1 = "-"
                         sha256 = "-"
 
-                        md5, sha1, sha256 = generateHashes(fileData)
+                        md5, sha1, sha256 = helpers.generateHashes(fileData)
 
                         # False Positive Hash
                         if md5 in self.false_hashes.keys() or sha1 in self.false_hashes.keys() or sha256 in self.false_hashes.keys():
@@ -404,7 +404,7 @@ class Loki(object):
                         # Umcompressed SWF scan
                         if fileType == "ZWS" or fileType == "CWS":
                             logger.log("INFO", "FileScan", "Scanning decompressed SWF file %s" % filePathCleaned)
-                            success, decompressedData = decompressSWFData(fileData)
+                            success, decompressedData = helpers.decompressSWFData(fileData)
                             if success:
                                 fileData = decompressedData
 
@@ -433,7 +433,7 @@ class Loki(object):
 
                     # Info Line -----------------------------------------------------------------------
                     fileInfo = "FILE: %s SCORE: %s TYPE: %s SIZE: %s FIRST_BYTES: %s %s %s " % (
-                        filePath, total_score, fileType, fileSize, firstBytesString, hashString, getAgeString(filePath))
+                        filePath, total_score, fileType, fileSize, firstBytesString, hashString, helpers.getAgeString(filePath))
 
                     # Now print the total result
                     if total_score >= args.a:
@@ -524,7 +524,7 @@ class Loki(object):
 
             string_num = 1
             for string in string_matches:
-                matching_strings += " Str" + str(string_num) + ": " + removeNonAscii(removeBinaryZero(string))
+                matching_strings += " Str" + str(string_num) + ": " + helpers.removeNonAscii(removeBinaryZero(string))
                 string_num += 1
 
             # Limit string
@@ -795,7 +795,7 @@ class Loki(object):
             # Process: winlogon.exe
             if name == "winlogon.exe" and priority is not 13:
                 logger.log("WARNING", "ProcessScan", "winlogon.exe priority is not 13 %s" % process_info)
-            if re.search("(Windows 7|Windows Vista)", getPlatformFull()):
+            if re.search("(Windows 7|Windows Vista)", helpers.getPlatformFull()):
                 if name == "winlogon.exe" and parent_pid > 0:
                     for proc in processes:
                         if parent_pid == proc.ProcessId:
@@ -912,11 +912,11 @@ class Loki(object):
 
     def check_c2(self, remote_system):
         # IP - exact match
-        if is_ip(remote_system):
+        if helpers.is_ip(remote_system):
             for c2 in self.c2_server:
                 # if C2 definition is CIDR network
-                if is_cidr(c2):
-                    if ip_in_net(remote_system, c2):
+                if helpers.is_cidr(c2):
+                    if helpers.ip_in_net(remote_system, c2):
                         return True, self.c2_server[c2]
                 # if C2 is ip or else
                 if c2 == remote_system:
@@ -1005,16 +1005,16 @@ class Loki(object):
                                     regex = line
 
                                 # Replace environment variables
-                                regex = replaceEnvVars(regex)
+                                regex = helpers.replaceEnvVars(regex)
                                 # OS specific transforms
-                                regex = transformOS(regex, os_platform)
+                                regex = helpers.transformOS(regex, os_platform)
 
                                 # If false positive definition exists
                                 regex_fp_comp = None
                                 if 'regex_fp' in locals():
                                     # Replacements
-                                    regex_fp = replaceEnvVars(regex_fp)
-                                    regex_fp = transformOS(regex_fp, os_platform)
+                                    regex_fp = helpers.replaceEnvVars(regex_fp)
+                                    regex_fp = helpers.transformOS(regex_fp, os_platform)
                                     # String regex as key - value is compiled regex of false positive values
                                     regex_fp_comp = re.compile(regex_fp)
 
@@ -1238,7 +1238,7 @@ class Loki(object):
         # Adapted to work with the fileData already read to avoid
         # further disk I/O
 
-        fp = StringIO(fileData)
+        fp = helpers.StringIO(fileData)
         SectorSize = fp.read(2)[::-1]
         MaxSectorCount = fp.read(2)[::-1]
         MaxFileCount = fp.read(2)[::-1]
@@ -1253,7 +1253,7 @@ class Loki(object):
         fp.seek(0)
 
         data = fp.read(0x7)
-        crc = binascii.crc32(data, 0x45)
+        crc = helpers.binascii.crc32(data, 0x45)
         crc2 = '%08x' % (crc & 0xffffffff)
 
         logger.log("DEBUG", "Rootkit", "Regin FS Check CRC2: %s" % crc2.encode('hex'))
@@ -1383,7 +1383,7 @@ def updateLoki(sigsOnly):
 def walk_error(err):
     try:
         if "Error 3" in str(err):
-            logger.log('ERROR', "FileScan", removeNonAsciiDrop(str(err)))
+            logger.log('ERROR', "FileScan", helpers.removeNonAsciiDrop(str(err)))
         elif args.debug:
             print("Directory walk error")
             sys.exit(1)
@@ -1410,7 +1410,7 @@ def main():
     parser = argparse.ArgumentParser(description='Loki - Simple IOC Scanner')
     parser.add_argument('-p', help='Path to scan', metavar='path', default='C:\\')
     parser.add_argument('-s', help='Maximum file size to check in KB (default 5000 KB)', metavar='kilobyte', default=5000)
-    parser.add_argument('-l', help='Log file', metavar='log-file', default='loki-%s.log' % getHostname(os_platform))
+    parser.add_argument('-l', help='Log file', metavar='log-file', default='loki-%s.log' % helpers.getHostname(os_platform))
     parser.add_argument('-r', help='Remote syslog system', metavar='remote-loghost', default='')
     parser.add_argument('-t', help='Remote syslog port', metavar='remote-syslog-port', default=514)
     parser.add_argument('-a', help='Alert score', metavar='alert-level', default=100)
@@ -1457,7 +1457,7 @@ if __name__ == '__main__':
             execfile(pathLokiInit, globals(), locals())
         except Exception:
             statusLokiInit = str(sys.exc_info()[1])
-    logger = LokiLogger(args.nolog, args.l, getHostname(os_platform), args.r, int(args.t), args.csv, args.onlyrelevant, args.debug,
+    logger = LokiLogger(args.nolog, args.l, helpers.getHostname(os_platform), args.r, int(args.t), args.csv, args.onlyrelevant, args.debug,
                         platform=os_platform, caller='main', customformatter=LokiCustomFormatter)
 
     # Update
@@ -1466,7 +1466,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     logger.log("NOTICE", "Init", "Starting Loki Scan VERSION: {3} SYSTEM: {0} TIME: {1} PLATFORM: {2}".format(
-        getHostname(os_platform), getSyslogTimestamp(), getPlatformFull(), logger.version))
+        helpers.getHostname(os_platform), getSyslogTimestamp(), helpers.getPlatformFull(), logger.version))
 
     if statusLokiInit == 'notpresent':
         pass
@@ -1498,7 +1498,7 @@ if __name__ == '__main__':
 
     # Set process to nice priority ------------------------------------
     if os_platform == "windows":
-        setNice(logger)
+        helpers.setNice(logger)
 
     # run plugins
     RunPluginsForPhase(LOKI_PHASE_BEFORE_SCANS)
@@ -1541,7 +1541,7 @@ if __name__ == '__main__':
         logger.log("RESULT", "Results", "SYSTEM SEEMS TO BE CLEAN.")
 
     logger.log("INFO", "Results", "Please report false positives via https://github.com/Neo23x0/signature-base")
-    logger.log("NOTICE", "Results", "Finished LOKI Scan SYSTEM: %s TIME: %s" % (getHostname(os_platform), getSyslogTimestamp()))
+    logger.log("NOTICE", "Results", "Finished LOKI Scan SYSTEM: %s TIME: %s" % (helpers.getHostname(os_platform), getSyslogTimestamp()))
 
     # run plugins
     RunPluginsForPhase(LOKI_PHASE_END)
