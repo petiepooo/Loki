@@ -1073,8 +1073,8 @@ class Loki(object):
                                 rule_count += 1
                             except Exception:
                                 logger.log("ERROR", "Init", "Error while initializing Yara rule %s ERROR: %s" % (filename, sys.exc_info()[1]))
-                                traceback.print_exc()
                                 if logger.debug:
+                                    traceback.print_exc()
                                     sys.exit(1)
                                 continue
 
