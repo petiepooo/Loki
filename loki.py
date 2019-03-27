@@ -545,7 +545,7 @@ class Loki(object):
                     owner.upper().startswith(u"SERVICE RÉSEAU") or
                     re.match(r"SERVICE R.SEAU", owner) or
                     owner == u"Système"  or
-                    owner.upper().startswith(u"AUTORITE NT\Système") or
+                    owner.upper().startswith(u"AUTORITE NT\\Système") or
                     re.match(r"AUTORITE NT\\Syst.me", owner))
         elif locale == 'ru_RU':
             return (owner.upper().startswith("NET") or
