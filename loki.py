@@ -132,7 +132,7 @@ class Loki(object):
         sig_dir = os.path.join(self.app_path, "./signature-base/")
         if not os.path.exists(sig_dir) or os.listdir(sig_dir) == []:
             logger.log("NOTICE", "Init", "The 'signature-base' subdirectory doesn't exist or is empty. "
-                                  "Trying to retrieve the signature database automatically.")
+                       "Trying to retrieve the signature database automatically.")
             updateLoki(sigsOnly=True)
 
         # Excludes
@@ -379,7 +379,7 @@ class Loki(object):
 
                         if matchType:
                             reasons.append("Malware Hash TYPE: %s HASH: %s SUBSCORE: 100 DESC: %s" % (
-                            matchType, matchHash, matchDesc))
+                                matchType, matchHash, matchDesc))
                             total_score += 100
 
                         # Regin .EVT FS Check
@@ -408,7 +408,7 @@ class Loki(object):
                             logger.log("INFO", "FileScan", "Scanning decompressed SWF file %s" % filePathCleaned)
                             success, decompressedData = decompressSWFData(fileData)
                             if success:
-                               fileData = decompressedData
+                                fileData = decompressedData
 
                         # Scan the read data
                         try:
@@ -419,7 +419,7 @@ class Loki(object):
                                                    filePath=filePathCleaned,
                                                    extension=extension,
                                                    md5=md5  # legacy rule support
-                                                   ):
+                                                  ):
                                 # Message
                                 message = "Yara Rule MATCH: %s SUBSCORE: %s DESCRIPTION: %s REF: %s" % \
                                           (rule, score, description, reference)
@@ -547,19 +547,19 @@ class Loki(object):
         locale = locale.windows_locale[windll.GetUserDefaultUILanguage()]
         if locale == 'fr_FR':
             return (owner.upper().startswith("SERVICE LOCAL") or
-                owner.upper().startswith(u"SERVICE RÉSEAU") or
-                re.match(r"SERVICE R.SEAU", owner) or
-                owner == u"Système"  or
-                owner.upper().startswith(u"AUTORITE NT\Système") or
-                re.match(r"AUTORITE NT\\Syst.me", owner))
+                    owner.upper().startswith(u"SERVICE RÉSEAU") or
+                    re.match(r"SERVICE R.SEAU", owner) or
+                    owner == u"Système"  or
+                    owner.upper().startswith(u"AUTORITE NT\Système") or
+                    re.match(r"AUTORITE NT\\Syst.me", owner))
         elif locale == 'ru_RU':
             return (owner.upper().startswith("NET") or
-                owner == u"система" or
-                owner.upper().startswith("LO"))
+                    owner == u"система" or
+                    owner.upper().startswith("LO"))
         else:
             return (owner.upper().startswith("NT ") or owner.upper().startswith("NET") or
-                owner.upper().startswith("LO") or
-                owner.upper().startswith("SYSTEM"))
+                    owner.upper().startswith("LO") or
+                    owner.upper().startswith("SYSTEM"))
 
 
     def scan_processes(self):
@@ -693,21 +693,21 @@ class Loki(object):
             ###############################################################
             # PE-Sieve Checks
             if processExists(pid) and self.peSieve.active:
-                    # If PE-Sieve reports replaced processes
-                    logger.log("DEBUG", "ProcessScan", "PE-Sieve scan of process PID: %s" % pid)
-                    results = self.peSieve.scan(pid=pid)
-                    if results["replaced"]:
-                        logger.log("WARNING", "ProcessScan", "PE-Sieve reported replaced process %s REPLACED: %s" %
-                                   (process_info, str(results["replaced"])))
-                    elif results["implanted"]:
-                        logger.log("WARNING", "ProcessScan", "PE-Sieve reported implanted process %s IMPLANTED: %s" %
-                                   (process_info, str(results["implanted"])))
-                    elif results["hooked"] or results["detached"]:
-                        logger.log("NOTICE", "ProcessScan", "PE-Sieve reported hooked or detached process %s "
-                                             "HOOKED: %s SUSPICIOUS: %s" % (process_info, str(results["hooked"]),
-                                                                            str(results["detached"])))
-                    else:
-                        logger.log("INFO", "ProcessScan", "PE-Sieve reported no anomalies %s" % process_info)
+                # If PE-Sieve reports replaced processes
+                logger.log("DEBUG", "ProcessScan", "PE-Sieve scan of process PID: %s" % pid)
+                results = self.peSieve.scan(pid=pid)
+                if results["replaced"]:
+                    logger.log("WARNING", "ProcessScan", "PE-Sieve reported replaced process %s REPLACED: %s" %
+                               (process_info, str(results["replaced"])))
+                elif results["implanted"]:
+                    logger.log("WARNING", "ProcessScan", "PE-Sieve reported implanted process %s IMPLANTED: %s" %
+                               (process_info, str(results["implanted"])))
+                elif results["hooked"] or results["detached"]:
+                    logger.log("NOTICE", "ProcessScan", "PE-Sieve reported hooked or detached process %s "
+                               "HOOKED: %s SUSPICIOUS: %s" % (process_info, str(results["hooked"]),
+                                                              str(results["detached"])))
+                else:
+                    logger.log("INFO", "ProcessScan", "PE-Sieve reported no anomalies %s" % process_info)
 
             ###############################################################
             # THOR Process Connection Checks
@@ -851,8 +851,8 @@ class Loki(object):
                         str(pid), name, command, str(x.laddr[0]), str(x.laddr[1])))
                     if str(x.laddr[1]) == "0":
                         logger.log("WARNING", "ProcessScan",
-                            "Listening on Port 0 PID: %s NAME: %s COMMAND: %s  IP: %s PORT: %s" % (
-                                str(pid), name, command, str(x.laddr[0]), str(x.laddr[1])))
+                                   "Listening on Port 0 PID: %s NAME: %s COMMAND: %s  IP: %s PORT: %s" % (
+                                       str(pid), name, command, str(x.laddr[0]), str(x.laddr[1])))
 
                 if x.status == 'ESTABLISHED':
 
@@ -863,14 +863,14 @@ class Loki(object):
                     is_match, description = self.check_c2(str(x.raddr[0]))
                     if is_match:
                         logger.log("ALERT", "ProcessScan",
-                            "Malware Domain/IP match in remote address PID: %s NAME: %s COMMAND: %s IP: %s PORT: %s DESC: %s" % (
-                                str(pid), name, command, str(x.raddr[0]), str(x.raddr[1]), description))
+                                   "Malware Domain/IP match in remote address PID: %s NAME: %s COMMAND: %s IP: %s PORT: %s DESC: %s" % (
+                                       str(pid), name, command, str(x.raddr[0]), str(x.raddr[1]), description))
 
                     # Full list
                     connection_count += 1
                     logger.log("NOTICE", "ProcessScan",
                                "Established connection PID: %s NAME: %s COMMAND: %s LIP: %s LPORT: %s RIP: %s RPORT: %s" % (
-                        str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]), str(x.raddr[0]), str(x.raddr[1])))
+                                   str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]), str(x.raddr[0]), str(x.raddr[1])))
 
                 # Maximum connection output
                 if connection_count > MAXIMUM_CONNECTIONS:
@@ -882,7 +882,7 @@ class Loki(object):
                 traceback.print_exc()
                 sys.exit(1)
             logger.log("INFO", "ProcessScan",
-                "Process %s does not exist anymore or cannot be accessed" % str(pid))
+                       "Process %s does not exist anymore or cannot be accessed" % str(pid))
 
     def check_rootkit(self):
 
@@ -1130,19 +1130,20 @@ class Loki(object):
                 sys.exit(1)
 
     def initialize_hash_iocs(self, ioc_directory, false_positive=False):
-        HASH_WHITELIST = [# Empty file
-                          'd41d8cd98f00b204e9800998ecf8427e',
-                          'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-                          # One byte line break file (Unix) 0x0a
-                          '68b329da9893e34099c7d8ad5cb9c940',
-                          'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
-                          '01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b',
-                          # One byte line break file (Windows) 0x0d0a
-                          '81051bcc2cf1bedf378224b0a93e2877',
-                          'ba8ab5a0280b953aa97435ff8946cbcbb2755a27',
-                          '7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6',
-                          ]
+        HASH_WHITELIST = [
+            # Empty file
+            'd41d8cd98f00b204e9800998ecf8427e',
+            'da39a3ee5e6b4b0d3255bfef95601890afd80709',
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            # One byte line break file (Unix) 0x0a
+            '68b329da9893e34099c7d8ad5cb9c940',
+            'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+            '01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b',
+            # One byte line break file (Windows) 0x0d0a
+            '81051bcc2cf1bedf378224b0a93e2877',
+            'ba8ab5a0280b953aa97435ff8946cbcbb2755a27',
+            '7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6',
+        ]
         try:
             for ioc_filename in os.listdir(ioc_directory):
                 if 'hash' in ioc_filename:
@@ -1545,7 +1546,7 @@ if __name__ == '__main__':
     if logger.alerts:
         logger.log("RESULT", "Results", "Indicators detected!")
         logger.log("RESULT", "Results", "Loki recommends checking the elements on virustotal.com or Google and triage with a "
-                             "professional tool like THOR https://nextron-systems.com/thor in corporate networks.")
+                   "professional tool like THOR https://nextron-systems.com/thor in corporate networks.")
     elif logger.warnings:
         logger.log("RESULT", "Results", "Suspicious objects detected!")
         logger.log("RESULT", "Results", "Loki recommends a deeper analysis of the suspicious objects.")
