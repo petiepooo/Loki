@@ -95,7 +95,10 @@ def removeNonAsciiDrop(string):
 def getPlatformFull():
     type_info = ""
     try:
-        type_info = "%s PROC: %s ARCH: %s" % ( " ".join(platform.win32_ver()), platform.processor(), " ".join(platform.architecture()))
+        if sys.platform == 'win32':
+            type_info = "%s PROC: %s ARCH: %s" % (" ".join(platform.win32_ver()), platform.processor(), " ".join(platform.architecture()))
+        else:
+            type_info = "%s PROC: %s ARCH: %s" % (sys.platform, platform.processor(), " ".join(platform.architecture()))
     except Exception, e:
         type_info = " ".join(platform.win32_ver())
     return type_info
