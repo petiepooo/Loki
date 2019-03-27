@@ -57,7 +57,7 @@ from lib.levenshtein import LevCheck
 import lib.helpers as helpers
 import lib.pesieve as pesieve
 import lib.doublepulsar as doublepulsar
-from lib.pluginframework import *
+import lib.pluginframework as pifw
 
 try:
     import wmi
@@ -889,7 +889,7 @@ class Loki(object):
         try:
             dp_rdp_result, message = dp.check_ip_rdp()
             if dp_rdp_result:
-                logger.log("ALERT", message)
+                logger.log("ALERT", "Rootkit", message)
             else:
                 logger.log("INFO", "Rootkit", "Double Pulsar RDP check RESULT: %s" % message)
         except Exception:
@@ -901,7 +901,7 @@ class Loki(object):
         try:
             dp_smb_result, message = dp.check_ip_smb()
             if dp_smb_result:
-                logger.log("ALERT", message)
+                logger.log("ALERT", "Rootkit", message)
             else:
                 logger.log("INFO", "Rootkit", "Double Pulsar SMB check RESULT: %s" % message)
         except Exception:
@@ -1451,7 +1451,7 @@ if __name__ == '__main__':
 
     # Logger
     LokiCustomFormatter = None
-    pathLokiInit, statusLokiInit = CheckLokiInit(get_application_path())
+    pathLokiInit, statusLokiInit = pifw.CheckLokiInit(get_application_path())
     if statusLokiInit == 'present':
         try:
             execfile(pathLokiInit, globals(), locals())
@@ -1471,12 +1471,12 @@ if __name__ == '__main__':
     if statusLokiInit == 'notpresent':
         pass
     elif statusLokiInit == 'present':
-        logger.log('INFO', 'Init', '%s loaded' % FILENAME_LOKI_INIT)
+        logger.log('INFO', 'Init', '%s loaded' % pifw.FILENAME_LOKI_INIT)
     else:
-        logger.log('ERROR', 'Init', '%s load error %s' % (FILENAME_LOKI_INIT, statusLokiInit))
+        logger.log('ERROR', 'Init', '%s load error %s' % (pifw.FILENAME_LOKI_INIT, statusLokiInit))
 
     # Load plugins
-    LoadPlugins(globals(), locals())
+    pifw.LoadPlugins(globals(), locals())
 
     # Loki
     loki = Loki(args.intense)
@@ -1501,7 +1501,7 @@ if __name__ == '__main__':
         helpers.setNice(logger)
 
     # run plugins
-    RunPluginsForPhase(LOKI_PHASE_BEFORE_SCANS)
+    pifw.RunPluginsForPhase(pifw.LOKI_PHASE_BEFORE_SCANS)
 
     # Scan Processes --------------------------------------------------
     resultProc = False
@@ -1526,7 +1526,7 @@ if __name__ == '__main__':
         loki.scan_path(defaultPath)
 
     # run plugins
-    RunPluginsForPhase(LOKI_PHASE_AFTER_SCANS)
+    pifw.RunPluginsForPhase(pifw.LOKI_PHASE_AFTER_SCANS)
 
     # Result ----------------------------------------------------------
     logger.log("NOTICE", "Results", "Results: {0} alerts, {1} warnings, {2} notices".format(logger.alerts, logger.warnings, logger.notices))
@@ -1544,7 +1544,7 @@ if __name__ == '__main__':
     logger.log("NOTICE", "Results", "Finished LOKI Scan SYSTEM: %s TIME: %s" % (helpers.getHostname(os_platform), getSyslogTimestamp()))
 
     # run plugins
-    RunPluginsForPhase(LOKI_PHASE_END)
+    pifw.RunPluginsForPhase(pifw.LOKI_PHASE_END)
 
     if not args.dontwait:
         print(" ")
