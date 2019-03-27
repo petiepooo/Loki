@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+# pylint: disable=C0103,C0301,C0111,C0302
+# pylint: disable=R0101,R0201,R0902,R0912,R0913,R0914,R0915
+# pylint: disable=W0703,W0613,W0212
 
 """
 Loki
