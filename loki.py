@@ -85,7 +85,7 @@ EVIL_EXTENSIONS = [".vbs", ".ps", ".ps1", ".rar", ".tmp", ".bas", ".bat", ".chm"
                    ".psm1", ".ps1xml", ".clixml", ".psc1", ".pssc", ".pl", ".www", ".rdp", ".jar", ".docm"]
 
 SCRIPT_EXTENSIONS = [".asp", ".vbs", ".ps1", ".bas", ".bat", ".js", ".vb", ".vbe", ".wsc", ".wsf",
-                     ".wsh",  ".jsp", ".php", ".asp", ".aspx", ".psd1", ".psm1", ".ps1xml", ".clixml", ".psc1",
+                     ".wsh", ".jsp", ".php", ".asp", ".aspx", ".psd1", ".psm1", ".ps1xml", ".clixml", ".psc1",
                      ".pssc"]
 
 SCRIPT_TYPES = ["VBS", "PHP", "JSP", "ASP", "BATCH"]
@@ -114,7 +114,7 @@ class Loki(object):
     max_filetype_magics = 0
 
     # Predefined paths to skip (Linux platform)
-    LINUX_PATH_SKIPS_START = set(["/proc", "/dev", "/media", "/sys/kernel/debug", "/sys/kernel/slab", "/sys/devices", "/usr/src/linux" ])
+    LINUX_PATH_SKIPS_START = set(["/proc", "/dev", "/media", "/sys/kernel/debug", "/sys/kernel/slab", "/sys/devices", "/usr/src/linux"])
     LINUX_PATH_SKIPS_END = set(["/initctl"])
 
     def __init__(self, intense_mode):
@@ -217,7 +217,7 @@ class Loki(object):
                     total_score = 0
 
                     # Get the file and path
-                    filePath = os.path.join(root,filename)
+                    filePath = os.path.join(root, filename)
                     # Clean the values for YARA matching
                     # > due to errors when Unicode characters are passed to the match function as
                     #   external variables
@@ -344,7 +344,7 @@ class Loki(object):
                         fileData = self.get_file_data(filePath)
 
                         # First bytes
-                        firstBytesString = "%s / %s" % (fileData[:20].encode('hex'), removeNonAsciiDrop(fileData[:20]) )
+                        firstBytesString = "%s / %s" % (fileData[:20].encode('hex'), removeNonAsciiDrop(fileData[:20]))
 
                         # Hash Eval
                         matchType = None
@@ -375,7 +375,7 @@ class Loki(object):
                             matchHash = sha256
 
                         # Hash string
-                        hashString = "MD5: %s SHA1: %s SHA256: %s" % ( md5, sha1, sha256 )
+                        hashString = "MD5: %s SHA1: %s SHA256: %s" % (md5, sha1, sha256)
 
                         if matchType:
                             reasons.append("Malware Hash TYPE: %s HASH: %s SUBSCORE: 100 DESC: %s" % (
@@ -544,7 +544,7 @@ class Loki(object):
         import ctypes
         import locale
         windll = ctypes.windll.kernel32
-        locale = locale.windows_locale[ windll.GetUserDefaultUILanguage() ]
+        locale = locale.windows_locale[windll.GetUserDefaultUILanguage()]
         if locale == 'fr_FR':
             return (owner.upper().startswith("SERVICE LOCAL") or
                 owner.upper().startswith(u"SERVICE RÉSEAU") or
@@ -557,7 +557,7 @@ class Loki(object):
                 owner == u"система" or
                 owner.upper().startswith("LO"))
         else:
-            return ( owner.upper().startswith("NT ") or owner.upper().startswith("NET") or
+            return (owner.upper().startswith("NT ") or owner.upper().startswith("NET") or
                 owner.upper().startswith("LO") or
                 owner.upper().startswith("SYSTEM"))
 
@@ -653,7 +653,7 @@ class Loki(object):
             # Yara rule match
             # only on processes with a small working set size
             if processExists(pid):
-                if int(ws_size) < ( args.maxworkingset * 1048576 ):
+                if int(ws_size) < (args.maxworkingset * 1048576):
                     try:
                         alerts = []
                         for rules in self.yara_rules:
@@ -688,7 +688,7 @@ class Loki(object):
                             traceback.print_exc()
                         logger.log("ERROR", "ProcessScan", "Error while process memory Yara check (maybe the process doesn't exist anymore or access denied) %s" % process_info)
                 else:
-                    logger.log("DEBUG", "ProcessScan", "Skipped Yara memory check due to the process' big working set size (stability issues) PID: %s NAME: %s SIZE: %s" % ( pid, name, ws_size))
+                    logger.log("DEBUG", "ProcessScan", "Skipped Yara memory check due to the process' big working set size (stability issues) PID: %s NAME: %s SIZE: %s" % (pid, name, ws_size))
 
             ###############################################################
             # PE-Sieve Checks
@@ -725,21 +725,21 @@ class Loki(object):
             if name == "smss.exe" and not parent_pid == 4:
                 logger.log("WARNING", "ProcessScan", "smss.exe parent PID is != 4 %s" % process_info)
             if path != "none":
-                if name == "smss.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "smss.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "smss.exe path is not System32 %s" % process_info)
             if name == "smss.exe" and priority is not 11:
                 logger.log("WARNING", "ProcessScan", "smss.exe priority is not 11 %s" % process_info)
 
             # Process: csrss.exe
             if path != "none":
-                if name == "csrss.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "csrss.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "csrss.exe path is not System32 %s" % process_info)
             if name == "csrss.exe" and priority is not 13:
                 logger.log("WARNING", "ProcessScan", "csrss.exe priority is not 13 %s" % process_info)
 
             # Process: wininit.exe
             if path != "none":
-                if name == "wininit.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "wininit.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "wininit.exe path is not System32 %s" % process_info)
             if name == "wininit.exe" and priority is not 13:
                 logger.log("NOTICE", "ProcessScan", "wininit.exe priority is not 13 %s" % process_info)
@@ -749,7 +749,7 @@ class Loki(object):
 
             # Process: services.exe
             if path != "none":
-                if name == "services.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "services.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "services.exe path is not System32 %s" % process_info)
             if name == "services.exe" and priority is not 9:
                 logger.log("WARNING", "ProcessScan", "services.exe priority is not 9 %s" % process_info)
@@ -759,7 +759,7 @@ class Loki(object):
 
             # Process: lsass.exe
             if path != "none":
-                if name == "lsass.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "lsass.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "lsass.exe path is not System32 %s" % process_info)
             if name == "lsass.exe" and priority is not 9:
                 logger.log("WARNING", "ProcessScan", "lsass.exe priority is not 9 %s" % process_info)
@@ -774,11 +774,11 @@ class Loki(object):
 
             # Process: svchost.exe
             if path is not "none":
-                if name == "svchost.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "svchost.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "svchost.exe path is not System32 %s" % process_info)
             if name == "svchost.exe" and priority is not 8:
                 logger.log("NOTICE", "ProcessScan", "svchost.exe priority is not 8 %s" % process_info)
-            if name == "svchost.exe" and not ( self.check_svchost_owner(owner) or "unistacksvcgroup" in cmd.lower()):
+            if name == "svchost.exe" and not (self.check_svchost_owner(owner) or "unistacksvcgroup" in cmd.lower()):
                 logger.log("WARNING", "ProcessScan", "svchost.exe process owner is suspicious %s" % process_info)
 
             if name == "svchost.exe" and not " -k " in cmd and cmd != "N/A":
@@ -786,11 +786,11 @@ class Loki(object):
 
             # Process: lsm.exe
             if path != "none":
-                if name == "lsm.exe" and not ( "system32" in path.lower() or "system32" in cmd.lower() ):
+                if name == "lsm.exe" and not ("system32" in path.lower() or "system32" in cmd.lower()):
                     logger.log("WARNING", "ProcessScan", "lsm.exe path is not System32 %s" % process_info)
             if name == "lsm.exe" and priority is not 8:
                 logger.log("NOTICE", "ProcessScan", "lsm.exe priority is not 8 %s" % process_info)
-            if name == "lsm.exe" and not ( owner.startswith("NT ") or owner.startswith("LO") or owner.startswith("SYSTEM")  or owner.startswith(u"система")):
+            if name == "lsm.exe" and not (owner.startswith("NT ") or owner.startswith("LO") or owner.startswith("SYSTEM")  or owner.startswith(u"система")):
                 logger.log(u"WARNING", "ProcessScan", "lsm.exe process owner is suspicious %s" % process_info)
             if wininit_pid > 0:
                 if name == "lsm.exe" and not parent_pid == wininit_pid:
@@ -848,11 +848,11 @@ class Loki(object):
                 if x.status == 'LISTEN':
                     connection_count += 1
                     logger.log("NOTICE", "ProcessScan", "Listening process PID: %s NAME: %s COMMAND: %s IP: %s PORT: %s" % (
-                        str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]) ))
+                        str(pid), name, command, str(x.laddr[0]), str(x.laddr[1])))
                     if str(x.laddr[1]) == "0":
                         logger.log("WARNING", "ProcessScan",
                             "Listening on Port 0 PID: %s NAME: %s COMMAND: %s  IP: %s PORT: %s" % (
-                                str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]) ))
+                                str(pid), name, command, str(x.laddr[0]), str(x.laddr[1])))
 
                 if x.status == 'ESTABLISHED':
 
@@ -870,7 +870,7 @@ class Loki(object):
                     connection_count += 1
                     logger.log("NOTICE", "ProcessScan",
                                "Established connection PID: %s NAME: %s COMMAND: %s LIP: %s LPORT: %s RIP: %s RPORT: %s" % (
-                        str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]), str(x.raddr[0]), str(x.raddr[1]) ))
+                        str(pid), name, command, str(x.laddr[0]), str(x.laddr[1]), str(x.raddr[0]), str(x.raddr[1])))
 
                 # Maximum connection output
                 if connection_count > MAXIMUM_CONNECTIONS:
@@ -933,7 +933,7 @@ class Loki(object):
                 if c2 in remote_system:
                     return True, self.c2_server[c2]
 
-        return False,""
+        return False, ""
 
     def initialize_c2_iocs(self, ioc_directory):
         try:
@@ -964,11 +964,11 @@ class Loki(object):
                                     self.c2_server[c2.lower()] = comment
 
                                 except Exception as e:
-                                    logger.log("ERROR", "Init",  "Cannot read line: %s" % line)
+                                    logger.log("ERROR", "Init", "Cannot read line: %s" % line)
                                     if logger.debug:
                                         sys.exit(1)
                 except OSError as e:
-                    logger.log("ERROR", "Init",  "No such file or directory")
+                    logger.log("ERROR", "Init", "No such file or directory")
         except Exception as e:
             traceback.print_exc()
             logger.log("ERROR", "Init", "Error reading Hash file: %s" % ioc_filename)
@@ -1035,9 +1035,9 @@ class Loki(object):
 
         except Exception as e:
             traceback.print_exc()
-            logger.log("ERROR",  "Init", "Error reading File IOC file: %s" % ioc_filename)
-            logger.log("ERROR",  "Init", "Please make sure that you cloned the repo or downloaded the sub repository: "
-                                         "See https://github.com/Neo23x0/Loki/issues/51")
+            logger.log("ERROR", "Init", "Error reading File IOC file: %s" % ioc_filename)
+            logger.log("ERROR", "Init", "Please make sure that you cloned the repo or downloaded the sub repository: "
+                                        "See https://github.com/Neo23x0/Loki/issues/51")
             sys.exit(1)
 
     def initialize_yara_rules(self):
@@ -1195,7 +1195,7 @@ class Loki(object):
                     if re.search(r'^#', line) or re.search(r'^[\s]*$', line) or ";" not in line:
                         continue
 
-                    ( sig_raw, description ) = line.rstrip("\n").split(";")
+                    (sig_raw, description) = line.rstrip("\n").split(";")
                     sig = re.sub(r' ', '', sig_raw)
 
                     if len(sig) > self.max_filetype_magics:
@@ -1244,11 +1244,11 @@ class Loki(object):
         # further disk I/O
 
         fp = StringIO(fileData)
-        SectorSize=fp.read(2)[::-1]
-        MaxSectorCount=fp.read(2)[::-1]
-        MaxFileCount=fp.read(2)[::-1]
-        FileTagLength=fp.read(1)[::-1]
-        CRC32custom=fp.read(4)[::-1]
+        SectorSize = fp.read(2)[::-1]
+        MaxSectorCount = fp.read(2)[::-1]
+        MaxFileCount = fp.read(2)[::-1]
+        FileTagLength = fp.read(1)[::-1]
+        CRC32custom = fp.read(4)[::-1]
 
         # original code:
         # fp.close()
@@ -1257,7 +1257,7 @@ class Loki(object):
         # replaced with the following:
         fp.seek(0)
 
-        data=fp.read(0x7)
+        data = fp.read(0x7)
         crc = binascii.crc32(data, 0x45)
         crc2 = '%08x' % (crc & 0xffffffff)
 
