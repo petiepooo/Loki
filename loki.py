@@ -25,21 +25,24 @@ BSK Consulting GmbH
 DISCLAIMER - USE AT YOUR OWN RISK.
 """
 
+#future imports first
 from __future__ import print_function
 
+#then standard imports
 import sys
 import os
 import argparse
 import traceback
-import yara         # install 'yara-python' module not the outdated 'yara' module
 import re
 import stat
-import psutil
 import platform
 import signal as signal_module
-from sys import platform as _platform
 from subprocess import Popen, PIPE
 from collections import Counter
+
+#then external imports
+import psutil
+import yara         # install 'yara-python' module not the outdated 'yara' module
 
 # LOKI Modules
 from lib.lokilogger import *
@@ -48,35 +51,30 @@ from lib.levenshtein import LevCheck
 # Private Rules Support
 from lib.privrules import *
 
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
 from lib.helpers import *
 from lib.pesieve import PESieve
 from lib.doublepulsar import DoublePulsar
 from lib.pluginframework import *
 
+try:
+    import wmi
+    import win32api
+    from win32com.shell import shell
+except Exception as e:
+    pass
+
 # Platform
-os_platform = ""
-if _platform == "linux" or _platform == "linux2":
+if sys.platform == "linux" or sys.platform == "linux2":
     os_platform = "linux"
-elif _platform == "darwin":
+elif sys.platform == "darwin":
     os_platform = "osx"
-elif _platform == "win32":
+elif sys.platform == "win32":
     os_platform = "windows"
-
-# Win32 Imports
-if os_platform == "windows":
-    try:
-        import wmi
-        import win32api
-        from win32com.shell import shell
-    except Exception as e:
-        print("Linux System - deactivating process memory check ...")
-        os_platform = "linux" # crazy guess
-
-if os_platform == "":
+else:
     print("Unable to determine platform - LOKI is lost.")
     sys.exit(1)
+
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 # Predefined Evil Extensions
 EVIL_EXTENSIONS = [".vbs", ".ps", ".ps1", ".rar", ".tmp", ".bas", ".bat", ".chm", ".cmd", ".com", ".cpl",
