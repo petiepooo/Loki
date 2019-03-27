@@ -25,6 +25,8 @@ BSK Consulting GmbH
 DISCLAIMER - USE AT YOUR OWN RISK.
 """
 
+from __future__ import print_function
+
 import sys
 import os
 import argparse
@@ -267,13 +269,11 @@ class Loki(object):
                         printProgress(c)
 
                     # Skip program directory
-                    # print appPath.lower() +" - "+ filePath.lower()
                     if self.app_path.lower() in filePath.lower():
                         logger.log("DEBUG", "FileScan", "Skipping file in program directory FILE: %s" % filePathCleaned)
                         continue
 
                     fileSize = os.stat(filePath).st_size
-                    # print file_size
 
                     # File Name Checks -------------------------------------------------
                     for fioc in self.filename_iocs:
@@ -464,7 +464,6 @@ class Loki(object):
     def scan_data(self, fileData, fileType="-", fileName="-", filePath="-", extension="-", md5="-"):
 
         # Scan parameters
-        #print fileType, fileName, filePath, extension, md5
         # Scan with yara
         try:
             for rules in self.yara_rules:
@@ -521,7 +520,6 @@ class Loki(object):
             string_matches = []
             matching_strings = ""
             for string in strings:
-                # print string
                 extract = string[2]
                 if extract not in string_matches:
                     string_matches.append(extract)
@@ -836,7 +834,6 @@ class Loki(object):
                     traceback.print_exc()
                 return
 
-            # print "Checking connections of %s" % process.Name
             for x in p.connections():
 
                 # Evaluate a usable command line to check
@@ -1202,7 +1199,6 @@ class Loki(object):
                     if len(sig) > self.max_filetype_magics:
                         self.max_filetype_magics = len(sig)
 
-                    # print "%s - %s" % ( sig, description )
                     self.filetype_magics[sig] = description
 
                 except Exception as e:
@@ -1339,11 +1335,7 @@ def get_application_path():
         else:
             application_path = os.path.dirname(os.path.realpath(__file__))
         if "~" in application_path and os_platform == "windows":
-            # print "Trying to translate"
-            # print application_path
             application_path = win32api.GetLongPathName(application_path)
-        #if args.debug:
-        #    logger.log("DEBUG", "Init", "Application Path: %s" % application_path)
         return application_path
     except Exception as e:
         print("Error while evaluation of application path")
