@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 # -*- coding: utf-8 -*-
 #
@@ -8,7 +8,10 @@
 import sys
 import hashlib
 import binascii
-import pylzma
+try:
+    import lzma
+except ImportError:
+    import pylzma as lzma
 import zlib
 import struct
 import socket
@@ -92,7 +95,10 @@ def removeNonAsciiDrop(string):
 def getPlatformFull():
     type_info = ""
     try:
-        type_info = "%s PROC: %s ARCH: %s" % ( " ".join(platform.win32_ver()), platform.processor(), " ".join(platform.architecture()))
+        if sys.platform == 'win32':
+            type_info = "%s PROC: %s ARCH: %s" % (" ".join(platform.win32_ver()), platform.processor(), " ".join(platform.architecture()))
+        else:
+            type_info = "%s PROC: %s ARCH: %s" % (sys.platform, platform.processor(), " ".join(platform.architecture()))
     except Exception, e:
         type_info = " ".join(platform.win32_ver())
     return type_info
@@ -137,7 +143,7 @@ def decompressSWFData(in_data):
             decompressData = zlib.decompress(in_data[8:])
         elif in_data[0] == 'Z':
             # lzma SWF
-            decompressData = pylzma.decompress(in_data[12:])
+            decompressData = lzma.decompress(in_data[12:])
         elif in_data[0] == 'F':
             # uncompressed SWF
             decompressData = in_data[8:]

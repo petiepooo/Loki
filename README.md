@@ -122,8 +122,16 @@ If you want to build LOKI yourself:
 
 ### Linux or OS X
 
-- [yara](https://github.com/VirusTotal/yara/) : just use the latest release source code, compile and install it (or install it via pip install yara-python)
 - Some Python packages: pip install yara-python psutil netaddr pylzma colorama
+- [yara](https://github.com/VirusTotal/yara/) : just use the latest release source code, compile and install it (or install it via pip install yara-python)
+- If your installed version of yara does not recognize signatures with imphash or other crypto primatives, uninstall it, make sure openssl headers are installed, and reinstall yara with the command
+```
+pip install --global-option="build" yara-python
+```
+- you may also want to ensure jansson and magic libraries are present and also add cuckooo and filemagic capabilities with
+```
+pip install --global-option="build" --global-option="--enable-cuckoo" --global-option="--enable-magic" yara-python
+```
 
 ### Windows
 

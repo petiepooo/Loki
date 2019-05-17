@@ -1,8 +1,12 @@
+#!/usr/bin/env python2.7
 import sys
 import yara
 import os
 import io
-import pylzma as lzma
+try:
+    import lzma
+except ImportError:
+    import pylzma as lzma
 
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
